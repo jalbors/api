@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generated 30-dic-2018 1:57:45 by Hibernate Tools 5.3.0.Beta2 --><!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping auto-import="true" default-access="property" default-cascade="none" default-lazy="true">
+    <class catalog="desguace_jorge" dynamic-insert="false" dynamic-update="false" mutable="true" name="domain.Usuario" optimistic-lock="version" polymorphism="implicit" select-before-update="false" table="usuario">
+        <id name="idUser" type="java.lang.Integer">
+            <column name="idUser"/>
+            <generator class="identity"/>
+        </id>
+        <property generated="never" lazy="false" name="name" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="name" not-null="true"/>
+        </property>
+        <property generated="never" lazy="false" name="surname" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="surname" not-null="true"/>
+        </property>
+        <property generated="never" lazy="false" name="email" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="email" not-null="true"/>
+        </property>
+        <property generated="never" lazy="false" name="password" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="password" not-null="true"/>
+        </property>
+        <property generated="never" lazy="false" name="money" optimistic-lock="true" type="double" unique="false">
+            <column name="money" not-null="true" precision="22" scale="0"/>
+        </property>
+        <property generated="never" lazy="false" name="registerDate" optimistic-lock="true" type="timestamp" unique="false">
+            <column length="26" name="registerDate" not-null="true"/>
+        </property>
+        <property generated="never" lazy="false" name="removeDate" optimistic-lock="true" type="timestamp" unique="false">
+            <column length="26" name="removeDate"/>
+        </property>
+        <property generated="never" lazy="false" name="rol" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="rol" not-null="true"/>
+        </property>
+        
+    </class>
+</hibernate-mapping>
