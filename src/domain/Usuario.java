@@ -76,8 +76,6 @@ public class Usuario implements java.io.Serializable {
 		this.money = money;
 		this.registerDate = registerDate;
 	}
-	
-	
 
 	public Usuario(String name, String surname, String email, String password, Date registerDate, String rol) {
 		super();
@@ -150,8 +148,18 @@ public class Usuario implements java.io.Serializable {
 		this.registerDate = registerDate;
 		this.removeDate = removeDate;
 	}
-	
-	
+
+	public Usuario(Integer idUser, String name, String surname, String email, double money, Date registerDate,
+			String rol) {
+		super();
+		this.idUser = idUser;
+		this.name = name;
+		this.surname = surname;
+		this.email = email;
+		this.money = money;
+		this.registerDate = registerDate;
+		this.rol = rol;
+	}
 
 	public Integer getIdUser() {
 		return this.idUser;
