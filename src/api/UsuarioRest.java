@@ -104,7 +104,7 @@ public class UsuarioRest {
 				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 				sesion.beginTransaction();
 				Query<Usuario> consultaUsuarioActual = sesion.createQuery(
-						"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate)FROM Usuario as u WHERE u.idUser = :idUser AND u.removeDate is NULL",
+						"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.idUser = :idUser AND u.removeDate is NULL",
 						domain.Usuario.class);
 				consultaUsuarioActual.setParameter("idUser", Integer.parseInt(id));
 
