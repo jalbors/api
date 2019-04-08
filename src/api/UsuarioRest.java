@@ -138,7 +138,7 @@ public class UsuarioRest {
 				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 				sesion.beginTransaction();
 				Query<Usuario> consultaRobotsUser = sesion.createQuery(
-						"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u",
+						"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL",
 						domain.Usuario.class);
 
 				List<Usuario> robotUsuario = consultaRobotsUser.setMaxResults(999999999).getResultList();
