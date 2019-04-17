@@ -41,7 +41,7 @@ import utils.HibernateUtil;
 
 @Path("/usuarios")
 public class UsuarioRest {
-	
+
 	@POST
 	@Path("/login")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -53,11 +53,10 @@ public class UsuarioRest {
 			Session sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
 
-			
 			UsuarioLogin userLogin = gson.fromJson(json, UsuarioLogin.class);
 
 			String pass_encrip = encryptarSHA256(userLogin.getPassword()).trim();
-			
+
 			Query<UsuarioLogin> consultaUserLogin = sesion.createQuery(
 					"select new domain.UsuarioLogin(u.email, u.password) FROM Usuario as u WHERE u.email = :email AND u.password = :password",
 					domain.UsuarioLogin.class);
@@ -65,25 +64,24 @@ public class UsuarioRest {
 			consultaUserLogin.setParameter("email", userLogin.getEmail());
 			consultaUserLogin.setParameter("password", pass_encrip);
 
-			
 			userLogin = (UsuarioLogin) consultaUserLogin.getSingleResult();
 
 			String tokenADevolver = generateToken(userLogin.getIdUser());
 			userLogin.setToken(tokenADevolver);
 			userLogin.setPassword("");
-			
+
 			String jsonADevolver = gson.toJson(userLogin);
 
 			sesion.getTransaction().commit();
 			sesion.close();
 
 			return Response.status(200).entity(jsonADevolver).build();
-			
+
 		} catch (IllegalArgumentException e) {
 
 			e.printStackTrace();
 			return Response.status(401).build();
-		}catch(NoResultException e) {
+		} catch (NoResultException e) {
 			e.printStackTrace();
 			return Response.status(300).build();
 		} catch (Exception e) {
@@ -91,88 +89,87 @@ public class UsuarioRest {
 			return Response.status(500).build();
 		}
 	}
-	
+
 	@GET
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getUsuarios(@PathParam("id") String id) {
 		Session sesion = null;
-		//if (Authorization.isAuthorized(token)) {
+		// if (Authorization.isAuthorized(token)) {
 
-			try {
-				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
-				sesion.beginTransaction();
-				Query<Usuario> consultaUsuarioActual = sesion.createQuery(
-						"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.idUser = :idUser AND u.removeDate is NULL",
-						domain.Usuario.class);
-				consultaUsuarioActual.setParameter("idUser", Integer.parseInt(id));
+		try {
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+			Query<Usuario> consultaUsuarioActual = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.idUser = :idUser AND u.removeDate is NULL",
+					domain.Usuario.class);
+			consultaUsuarioActual.setParameter("idUser", Integer.parseInt(id));
 
-				Usuario usuario = consultaUsuarioActual.getSingleResult();
-				System.out.println(usuario.toString());
-				sesion.getTransaction().commit();
-				sesion.close();
+			Usuario usuario = consultaUsuarioActual.getSingleResult();
+			System.out.println(usuario.toString());
+			sesion.getTransaction().commit();
+			sesion.close();
 
-				Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
-				String jsonADevolver = gson.toJson(usuario);
-				return Response.status(200).entity(jsonADevolver).build();
-			} catch (NoResultException e) {
-				sesion.close();
-				e.printStackTrace();
-				return Response.status(404).build();
-			} catch (Exception e) {
-				sesion.close();
-				e.printStackTrace();
-				return Response.status(500).build();
-			}
-		//}
-		//return Response.status(500).build();
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			String jsonADevolver = gson.toJson(usuario);
+			return Response.status(200).entity(jsonADevolver).build();
+		} catch (NoResultException e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(404).build();
+		} catch (Exception e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(500).build();
+		}
+		// }
+		// return Response.status(500).build();
 	}
-	
+
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getRobotsUsuario() {
-			Session sesion = null;
-			try {
-				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
-				sesion.beginTransaction();
-				Query<Usuario> consultaRobotsUser = sesion.createQuery(
-						"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL",
-						domain.Usuario.class);
+		Session sesion = null;
+		try {
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+			Query<Usuario> consultaRobotsUser = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL",
+					domain.Usuario.class);
 
-				List<Usuario> robotUsuario = consultaRobotsUser.setMaxResults(999999999).getResultList();
+			List<Usuario> robotUsuario = consultaRobotsUser.setMaxResults(999999999).getResultList();
 
-				System.out.println(robotUsuario.toString());
-				sesion.getTransaction().commit();
-				sesion.close();
+			System.out.println(robotUsuario.toString());
+			sesion.getTransaction().commit();
+			sesion.close();
 
-				Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
-				String jsonADevolver = gson.toJson(robotUsuario);
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			String jsonADevolver = gson.toJson(robotUsuario);
 
-				return Response.status(200).entity(jsonADevolver).build();
+			return Response.status(200).entity(jsonADevolver).build();
 
-			} catch (JsonSyntaxException e) {
-				e.printStackTrace();
-				return Response.status(400).build();
-			} catch (NoResultException e) {
-				sesion.close();
-				e.printStackTrace();
-				return Response.status(404).build();
-			} catch (Exception e) {
-				sesion.close();
-				e.printStackTrace();
-				return Response.status(500).build();
-			}
-		
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			return Response.status(400).build();
+		} catch (NoResultException e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(404).build();
+		} catch (Exception e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(500).build();
+		}
 
 	}
-	
-	
+
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response postCliente(String json) {
+	public Response postCliente(String json, @HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
+		if (Authorization.isAuthorized(token)) {
 			Session sesion = null;
 			try {
 				Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
@@ -201,11 +198,12 @@ public class UsuarioRest {
 				System.out.println(e.getMessage());
 				return Response.status(500).build();
 			}
-		
-			
+		} else {
+			return Response.status(401).build();
+		}
 
 	}
-	
+
 	@PUT
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -213,87 +211,85 @@ public class UsuarioRest {
 	public Response actualizarUsuario(@PathParam("id") String id, String json) {
 
 		Session sesion = null;
-			try {
+		try {
 
-				Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
-				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
-				sesion.beginTransaction();
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
 
-				Usuario u1 = gson.fromJson(json, Usuario.class);
+			Usuario u1 = gson.fromJson(json, Usuario.class);
 
-				Query<Usuario> consulta = sesion.createQuery(
-						"SELECT new domain.Usuario (u.name, u.surname, u.email, u.password, u.money) FROM Usuario as u WHERE u.idUser = :idUser", Usuario.class);
-				consulta.setParameter("idUser", Integer.parseInt(id));
-				Usuario usuario_comp = consulta.getSingleResult();
-				
-				if (u1.getMoney() != usuario_comp.getMoney() || u1.getMoney() == usuario_comp.getMoney()) {
+			Query<Usuario> consulta = sesion.createQuery(
+					"SELECT new domain.Usuario (u.name, u.surname, u.email, u.password, u.money) FROM Usuario as u WHERE u.idUser = :idUser",
+					Usuario.class);
+			consulta.setParameter("idUser", Integer.parseInt(id));
+			Usuario usuario_comp = consulta.getSingleResult();
 
-					int numFilasAc = sesion
-							.createQuery(
-									"UPDATE domain.Usuario AS u SET u.money = :money+u.money WHERE u.idUser = :idUser")
-							.setParameter("money", u1.getMoney()).setParameter("idUser", Integer.parseInt(id))
-							.executeUpdate();
+			if (u1.getMoney() != usuario_comp.getMoney() || u1.getMoney() == usuario_comp.getMoney()) {
 
-					sesion.getTransaction().commit();
-					sesion.close();
+				int numFilasAc = sesion
+						.createQuery("UPDATE domain.Usuario AS u SET u.money = :money+u.money WHERE u.idUser = :idUser")
+						.setParameter("money", u1.getMoney()).setParameter("idUser", Integer.parseInt(id))
+						.executeUpdate();
 
-					String json_dev = gson.toJson(u1);
-
-					return Response.status(201).entity(json_dev).build();
-
-				}else if(u1.getPassword()!=usuario_comp.getPassword()) {
-					int numFilasAc = sesion
-							.createQuery(
-									"UPDATE domain.Usuario AS u SET u.password = :password WHERE u.idUser = :idUser")
-							.setParameter("password", u1.getPassword())
-							.setParameter("idUser", Integer.parseInt(id))
-							.executeUpdate();
-
-					sesion.getTransaction().commit();
-					sesion.close();
-
-					String json_dev = gson.toJson(u1);
-
-					return Response.status(201).entity(json_dev).build();
-				}
-
-			} catch (JsonSyntaxException e) {
-
+				sesion.getTransaction().commit();
 				sesion.close();
-				System.out.println(e.getMessage());
 
-				return Response.status(400).build();
+				String json_dev = gson.toJson(u1);
 
-			} catch (NoResultException e) {
+				return Response.status(201).entity(json_dev).build();
 
+			} else if (u1.getPassword() != usuario_comp.getPassword()) {
+				int numFilasAc = sesion
+						.createQuery("UPDATE domain.Usuario AS u SET u.password = :password WHERE u.idUser = :idUser")
+						.setParameter("password", u1.getPassword()).setParameter("idUser", Integer.parseInt(id))
+						.executeUpdate();
+
+				sesion.getTransaction().commit();
 				sesion.close();
-				System.out.println(e.getMessage());
-				return Response.status(404).build();
 
-			} catch (HibernateException e) {
+				String json_dev = gson.toJson(u1);
 
-				sesion.close();
-				System.out.println(e.getMessage());
-				return Response.status(500).build();
-
-			} catch (Exception e) {
-
-				sesion.close();
-				System.out.println(e.getMessage());
-				return Response.status(500).build();
+				return Response.status(201).entity(json_dev).build();
 			}
-		
+
+		} catch (JsonSyntaxException e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
+
+			return Response.status(400).build();
+
+		} catch (NoResultException e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
+			return Response.status(404).build();
+
+		} catch (HibernateException e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
+			return Response.status(500).build();
+
+		} catch (Exception e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
+			return Response.status(500).build();
+		}
+
 		return Response.status(500).build();
 	}
-	
+
 	@DELETE
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response eliminarFactura(@PathParam("id") String id) {
+	public Response eliminarFactura(@PathParam("id") String id, @HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
 
 		Session sesion = null;
-
+		if (Authorization.isAuthorized(token)) {
 			try {
 				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 
@@ -319,11 +315,11 @@ public class UsuarioRest {
 				System.out.println(e.getMessage());
 				return Response.status(500).build();
 			}
-		
+		}
+		return Response.status(500).build();
 
 	}
-	
-	
+
 	public String generateToken(String id) throws Exception {
 		SimpleDateFormat formate = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -337,16 +333,16 @@ public class UsuarioRest {
 
 		return token;
 	}
-	
+
 	public String encryptarSHA256(String mensaje) throws NoSuchAlgorithmException {
 		MessageDigest md;
-			 md = MessageDigest.getInstance("SHA-256");
+		md = MessageDigest.getInstance("SHA-256");
 
-			 byte dataBytes[] = mensaje.getBytes();//TEXTO A BYTES
-			 md.update(dataBytes) ;//SE INTRQDUCE TEXTO EN BYTES A RESUMIR
-			 byte resumen[] = md.digest();//SE CALCULA EL RESUMEN
+		byte dataBytes[] = mensaje.getBytes();// TEXTO A BYTES
+		md.update(dataBytes);// SE INTRQDUCE TEXTO EN BYTES A RESUMIR
+		byte resumen[] = md.digest();// SE CALCULA EL RESUMEN
 
-			 return new String(Base64.getEncoder().encodeToString(resumen));
+		return new String(Base64.getEncoder().encodeToString(resumen));
 
 	}
 }
