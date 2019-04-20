@@ -217,25 +217,30 @@ public class UsuarioRest {
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
 
-			//usuario que le envia el usuario
+			// usuario que le envia el usuario
 			Usuario u1 = gson.fromJson(json, Usuario.class);
 
 			Query<Usuario> consulta = sesion.createQuery(
 					"SELECT new domain.Usuario (u.name, u.surname, u.email, u.password, u.money) FROM Usuario as u WHERE u.idUser = :idUser",
 					Usuario.class);
 			consulta.setParameter("idUser", Integer.parseInt(id));
-			
-			//usuario ya creado en la BD
+
+			// usuario ya creado en la BD
 			Usuario usuario_comp = consulta.getSingleResult();
-			
-			//la pass del user la encripto porque en la BD esta encriptada
+
+			// la pass del user la encripto porque en la BD esta encriptada
 			String passUsuarioEnviada = encryptarSHA256(u1.getPassword());
 
-			if (!passUsuarioEnviada.equalsIgnoreCase(usuario_comp.getPassword())) {
-				int numFilasAc = sesion
-						.createQuery("UPDATE domain.Usuario AS u SET u.password = :password WHERE u.idUser = :idUser")
-						.setParameter("password", passUsuarioEnviada)
-						.setParameter("idUser", Integer.parseInt(id))
+			if (!passUsuarioEnviada.equalsIgnoreCase(usuario_comp.getPassword())
+					&& !u1.getName().equalsIgnoreCase(usuario_comp.getName())
+					&& !u1.getSurname().equalsIgnoreCase(usuario_comp.getSurname())
+					&& !u1.getEmail().equalsIgnoreCase(usuario_comp.getEmail())
+					&& u1.getMoney() != usuario_comp.getMoney()) {
+				int numFilasAc = sesion.createQuery(
+						"UPDATE domain.Usuario AS u SET u.password = :password, u.name = :name, u.surname = :surname, u.email = :email, u.money = :money WHERE u.idUser = :idUser")
+						.setParameter("password", passUsuarioEnviada).setParameter("name", u1.getName())
+						.setParameter("surname", u1.getSurname()).setParameter("email", u1.getEmail())
+						.setParameter("money", u1.getMoney()).setParameter("idUser", Integer.parseInt(id))
 						.executeUpdate();
 
 				sesion.getTransaction().commit();
