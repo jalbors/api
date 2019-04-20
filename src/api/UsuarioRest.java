@@ -217,39 +217,32 @@ public class UsuarioRest {
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
 
+			//usuario que le envia el usuario
 			Usuario u1 = gson.fromJson(json, Usuario.class);
 
 			Query<Usuario> consulta = sesion.createQuery(
 					"SELECT new domain.Usuario (u.name, u.surname, u.email, u.password, u.money) FROM Usuario as u WHERE u.idUser = :idUser",
 					Usuario.class);
 			consulta.setParameter("idUser", Integer.parseInt(id));
+			
+			//usuario ya creado en la BD
 			Usuario usuario_comp = consulta.getSingleResult();
+			
+			//la pass del user la encripto porque en la BD esta encriptada
+			String passUsuarioEnviada = encryptarSHA256(u1.getPassword());
 
-			if (u1.getMoney() != usuario_comp.getMoney() || u1.getMoney() == usuario_comp.getMoney()) {
-
-				int numFilasAc = sesion
-						.createQuery("UPDATE domain.Usuario AS u SET u.money = :money+u.money WHERE u.idUser = :idUser")
-						.setParameter("money", u1.getMoney()).setParameter("idUser", Integer.parseInt(id))
-						.executeUpdate();
-
-				sesion.getTransaction().commit();
-				sesion.close();
-
-				String json_dev = gson.toJson(u1);
-
-				return Response.status(201).entity(json_dev).build();
-
-			} else if (u1.getPassword() != usuario_comp.getPassword()) {
+			if (!passUsuarioEnviada.equalsIgnoreCase(usuario_comp.getPassword())) {
 				int numFilasAc = sesion
 						.createQuery("UPDATE domain.Usuario AS u SET u.password = :password WHERE u.idUser = :idUser")
-						.setParameter("password", u1.getPassword()).setParameter("idUser", Integer.parseInt(id))
+						.setParameter("password", passUsuarioEnviada)
+						.setParameter("idUser", Integer.parseInt(id))
 						.executeUpdate();
 
 				sesion.getTransaction().commit();
 				sesion.close();
 
 				String json_dev = gson.toJson(u1);
-
+				System.out.println(numFilasAc);
 				return Response.status(201).entity(json_dev).build();
 			}
 
