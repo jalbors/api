@@ -3,7 +3,5 @@
 
 <hibernate-reverse-engineering>
   <table-filter match-schema="desguace_jorge" match-name=".*"/>
-  <table-filter match-catalog="desguace_jorge" match-name="componentes"/>
-  <table-filter match-catalog="desguace_jorge" match-name="intercambios"/>
   <table-filter match-catalog="desguace_jorge" match-name="usuario"/>
 </hibernate-reverse-engineering>
