@@ -1,7 +1,6 @@
 package api;
 
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Base64;
@@ -49,14 +48,18 @@ public class UsuarioRest {
 	public Response loginUsuario(String json) throws Exception {
 
 		try {
+			// empieza la transaccion
 			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 			Session sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
 
+			// recivo el usuario
 			UsuarioLogin userLogin = gson.fromJson(json, UsuarioLogin.class);
 
+			// le encripto las pass para que sea igual que en la BD
 			String pass_encrip = encryptarSHA256(userLogin.getPassword()).trim();
 
+			// creo una consulta pasandole el email y la pass encriptada
 			Query<UsuarioLogin> consultaUserLogin = sesion.createQuery(
 					"select new domain.UsuarioLogin(u.email, u.password) FROM Usuario as u WHERE u.email = :email AND u.password = :password",
 					domain.UsuarioLogin.class);
@@ -64,25 +67,27 @@ public class UsuarioRest {
 			consultaUserLogin.setParameter("email", userLogin.getEmail());
 			consultaUserLogin.setParameter("password", pass_encrip);
 
+			// me devuelve el usuario si todo ha ido bien
 			userLogin = (UsuarioLogin) consultaUserLogin.getSingleResult();
 
+			// genera el token y setea la pass en blanco
 			String tokenADevolver = generateToken(userLogin.getIdUser());
 			userLogin.setToken(tokenADevolver);
 			userLogin.setPassword("");
 
+			// devuelvo el usuario
 			String jsonADevolver = gson.toJson(userLogin);
 
 			sesion.getTransaction().commit();
 			sesion.close();
-
 			return Response.status(200).entity(jsonADevolver).build();
 
 		} catch (IllegalArgumentException e) {
-
 			e.printStackTrace();
 			return Response.status(401).build();
 		} catch (NoResultException e) {
 			e.printStackTrace();
+			// codigo de 300 para pruebas mias
 			return Response.status(300).build();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -96,24 +101,27 @@ public class UsuarioRest {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getUsuarios(@PathParam("id") String id) {
 		Session sesion = null;
-		// if (Authorization.isAuthorized(token)) {
 
 		try {
+			//creo una consulta que me devuelva los datos del ID elegido
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
 			Query<Usuario> consultaUsuarioActual = sesion.createQuery(
 					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.idUser = :idUser AND u.removeDate is NULL",
 					domain.Usuario.class);
 			consultaUsuarioActual.setParameter("idUser", Integer.parseInt(id));
-
 			Usuario usuario = consultaUsuarioActual.getSingleResult();
+			
+			//muestro que haya devuelto lo correcto
 			System.out.println(usuario.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
 
+			//le envio el usuario 
 			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 			String jsonADevolver = gson.toJson(usuario);
 			return Response.status(200).entity(jsonADevolver).build();
+			
 		} catch (NoResultException e) {
 			sesion.close();
 			e.printStackTrace();
@@ -123,8 +131,7 @@ public class UsuarioRest {
 			e.printStackTrace();
 			return Response.status(500).build();
 		}
-		// }
-		// return Response.status(500).build();
+		
 	}
 
 	@GET
@@ -133,21 +140,25 @@ public class UsuarioRest {
 	public Response getRobotsUsuario() {
 		Session sesion = null;
 		try {
+			//creo y empiezo la transac
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
-			Query<Usuario> consultaRobotsUser = sesion.createQuery(
+			
+			//creo la consulta
+			Query<Usuario> consultaUsers = sesion.createQuery(
 					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL",
 					domain.Usuario.class);
 
-			List<Usuario> robotUsuario = consultaRobotsUser.setMaxResults(999999999).getResultList();
+			//hago una lista de todos los usuarios devueltos
+			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
-			System.out.println(robotUsuario.toString());
+			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
 
+			//devuelvo la lista de usuarios totales
 			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
-			String jsonADevolver = gson.toJson(robotUsuario);
-
+			String jsonADevolver = gson.toJson(usuariosTotales);
 			return Response.status(200).entity(jsonADevolver).build();
 
 		} catch (JsonSyntaxException e) {
@@ -169,13 +180,19 @@ public class UsuarioRest {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response postCliente(String json, @HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
+		
+		//si tiene el token continuara
 		if (Authorization.isAuthorized(token)) {
 			Session sesion = null;
+			
 			try {
+				//creo la transac
 				Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 				sesion.beginTransaction();
 
+				//recibo el usuario, le creo una fecha para la BD,
+				//le encripto la pass y le seteo un rol por defecto
 				Usuario c1 = gson.fromJson(json, Usuario.class);
 				c1.setRegisterDate(new Date());
 				String pass = encryptarSHA256(c1.getPassword());
@@ -186,6 +203,7 @@ public class UsuarioRest {
 				sesion.getTransaction().commit();
 				sesion.close();
 
+				//le devuelvo el json con el usuario ya creado
 				json = gson.toJson(c1);
 				return Response.status(201).entity(json).build();
 
@@ -212,7 +230,7 @@ public class UsuarioRest {
 
 		Session sesion = null;
 		try {
-
+			//creo la transa
 			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
@@ -287,12 +305,14 @@ public class UsuarioRest {
 	public Response eliminarFactura(@PathParam("id") String id, @HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
 
 		Session sesion = null;
+		//pido el token
 		if (Authorization.isAuthorized(token)) {
 			try {
+				//empieza la transa
 				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
-
 				sesion.beginTransaction();
 
+				//updateo el usuario para eliminarlo creadnole una fecha -> removeDate
 				int numFilasActualizadas = sesion
 						.createQuery(
 								"UPDATE Usuario AS user SET user.removeDate = :removeDate WHERE user.idUser = :idUser")
@@ -300,10 +320,11 @@ public class UsuarioRest {
 						.executeUpdate();
 				System.out.println(numFilasActualizadas);
 
+				//si lo updatea devuelvo un 200
 				sesion.getTransaction().commit();
 				sesion.close();
-
 				return Response.status(200).build();
+				
 			} catch (NoSuchFieldError e) {
 				sesion.close();
 				System.out.println(e.getMessage());
@@ -318,6 +339,7 @@ public class UsuarioRest {
 
 	}
 
+	// metodo para generar el token segun el ID
 	public String generateToken(String id) throws Exception {
 		SimpleDateFormat formate = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -332,15 +354,19 @@ public class UsuarioRest {
 		return token;
 	}
 
-	public String encryptarSHA256(String mensaje) throws NoSuchAlgorithmException {
+	// metodo para encriptar una contraseña recivida
+	public String encryptarSHA256(String mensaje) {
 		MessageDigest md;
-		md = MessageDigest.getInstance("SHA-256");
-
-		byte dataBytes[] = mensaje.getBytes();// TEXTO A BYTES
-		md.update(dataBytes);// SE INTRQDUCE TEXTO EN BYTES A RESUMIR
-		byte resumen[] = md.digest();// SE CALCULA EL RESUMEN
-
-		return new String(Base64.getEncoder().encodeToString(resumen));
+		try {
+			md = MessageDigest.getInstance("SHA-256");
+			byte dataBytes[] = mensaje.getBytes();
+			md.update(dataBytes);
+			byte resumen[] = md.digest();
+			return new String(Base64.getEncoder().encodeToString(resumen));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 
 	}
 }

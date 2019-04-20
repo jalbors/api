@@ -1,5 +1,6 @@
 package domain;
 
+//Usuario para el login
 public class UsuarioLogin {
 
 	private String email;

@@ -2,5 +2,6 @@ package domain;
 
 public class Constants {
 
-	public final static String TOKEN_KEY = "Acc3s0@Dato$";
+	//constante para generar token
+	public final static String TOKEN_KEY = "Akc333soO0@Dato$EnkrIPt4d0S";
 }
