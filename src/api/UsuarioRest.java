@@ -103,7 +103,7 @@ public class UsuarioRest {
 		Session sesion = null;
 
 		try {
-			//creo una consulta que me devuelva los datos del ID elegido
+			// creo una consulta que me devuelva los datos del ID elegido
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
 			Query<Usuario> consultaUsuarioActual = sesion.createQuery(
@@ -111,17 +111,17 @@ public class UsuarioRest {
 					domain.Usuario.class);
 			consultaUsuarioActual.setParameter("idUser", Integer.parseInt(id));
 			Usuario usuario = consultaUsuarioActual.getSingleResult();
-			
-			//muestro que haya devuelto lo correcto
+
+			// muestro que haya devuelto lo correcto
 			System.out.println(usuario.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
 
-			//le envio el usuario 
+			// le envio el usuario
 			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 			String jsonADevolver = gson.toJson(usuario);
 			return Response.status(200).entity(jsonADevolver).build();
-			
+
 		} catch (NoResultException e) {
 			sesion.close();
 			e.printStackTrace();
@@ -131,32 +131,249 @@ public class UsuarioRest {
 			e.printStackTrace();
 			return Response.status(500).build();
 		}
-		
+
 	}
 
 	@GET
+	@Path("/administradores")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getRobotsUsuario() {
+	public Response getAdmins() {
 		Session sesion = null;
 		try {
-			//creo y empiezo la transac
+			// creo y empiezo la transac
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
-			
-			//creo la consulta
-			Query<Usuario> consultaUsers = sesion.createQuery(
-					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL",
-					domain.Usuario.class);
 
-			//hago una lista de todos los usuarios devueltos
+			// creo la consulta
+			Query<Usuario> consultaUsers = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL AND u.rol = :rol",
+					domain.Usuario.class);
+			consultaUsers.setParameter("rol", "ADMIN");
+
+			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
 			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
 
-			//devuelvo la lista de usuarios totales
+			// devuelvo la lista de usuarios totales
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			String jsonADevolver = gson.toJson(usuariosTotales);
+			return Response.status(200).entity(jsonADevolver).build();
+
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			return Response.status(400).build();
+		} catch (NoResultException e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(404).build();
+		} catch (Exception e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(500).build();
+		}
+
+	}
+
+	@GET
+	@Path("/usuariosNormales")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getUsersNormales() {
+		Session sesion = null;
+		try {
+			// creo y empiezo la transac
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+
+			// creo la consulta
+			Query<Usuario> consultaUsers = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL AND u.rol = :rol",
+					domain.Usuario.class);
+			consultaUsers.setParameter("rol", "USER");
+
+			// hago una lista de todos los usuarios devueltos
+			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
+
+			System.out.println(usuariosTotales.toString());
+			sesion.getTransaction().commit();
+			sesion.close();
+
+			// devuelvo la lista de usuarios totales
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			String jsonADevolver = gson.toJson(usuariosTotales);
+			return Response.status(200).entity(jsonADevolver).build();
+
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			return Response.status(400).build();
+		} catch (NoResultException e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(404).build();
+		} catch (Exception e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(500).build();
+		}
+
+	}
+	
+	@GET
+	@Path("/ordenarPorDinero")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCositas() {
+		Session sesion = null;
+		try {
+			// creo y empiezo la transac
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+
+			// creo la consulta
+			Query<Usuario> consultaUsers = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL order by u.money desc",
+					domain.Usuario.class);
+
+			// hago una lista de todos los usuarios devueltos
+			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
+
+			System.out.println(usuariosTotales.toString());
+			sesion.getTransaction().commit();
+			sesion.close();
+
+			// devuelvo la lista de usuarios totales
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			String jsonADevolver = gson.toJson(usuariosTotales);
+			return Response.status(200).entity(jsonADevolver).build();
+
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			return Response.status(400).build();
+		} catch (NoResultException e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(404).build();
+		} catch (Exception e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(500).build();
+		}
+
+	}
+	
+	@GET
+	@Path("/ordenarPorFecha")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCositasVarias() {
+		Session sesion = null;
+		try {
+			// creo y empiezo la transac
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+
+			// creo la consulta
+			Query<Usuario> consultaUsers = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL order by u.registerDate asc",
+					domain.Usuario.class);
+
+			// hago una lista de todos los usuarios devueltos
+			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
+
+			System.out.println(usuariosTotales.toString());
+			sesion.getTransaction().commit();
+			sesion.close();
+
+			// devuelvo la lista de usuarios totales
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			String jsonADevolver = gson.toJson(usuariosTotales);
+			return Response.status(200).entity(jsonADevolver).build();
+
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			return Response.status(400).build();
+		} catch (NoResultException e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(404).build();
+		} catch (Exception e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(500).build();
+		}
+
+	}
+	
+	@GET
+	@Path("/ordenarPorNombre")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getOrdenadosPorNombre() {
+		Session sesion = null;
+		try {
+			// creo y empiezo la transac
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+
+			// creo la consulta
+			Query<Usuario> consultaUsers = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL order by u.name asc",
+					domain.Usuario.class);
+
+			// hago una lista de todos los usuarios devueltos
+			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
+
+			System.out.println(usuariosTotales.toString());
+			sesion.getTransaction().commit();
+			sesion.close();
+
+			// devuelvo la lista de usuarios totales
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			String jsonADevolver = gson.toJson(usuariosTotales);
+			return Response.status(200).entity(jsonADevolver).build();
+
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			return Response.status(400).build();
+		} catch (NoResultException e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(404).build();
+		} catch (Exception e) {
+			sesion.close();
+			e.printStackTrace();
+			return Response.status(500).build();
+		}
+
+	}
+
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getUsuariosTotales() {
+		Session sesion = null;
+		try {
+			// creo y empiezo la transac
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+
+			// creo la consulta
+			Query<Usuario> consultaUsers = sesion.createQuery(
+					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL",
+					domain.Usuario.class);
+
+			// hago una lista de todos los usuarios devueltos
+			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
+
+			System.out.println(usuariosTotales.toString());
+			sesion.getTransaction().commit();
+			sesion.close();
+
+			// devuelvo la lista de usuarios totales
 			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 			String jsonADevolver = gson.toJson(usuariosTotales);
 			return Response.status(200).entity(jsonADevolver).build();
@@ -180,19 +397,19 @@ public class UsuarioRest {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response postCliente(String json, @HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
-		
-		//si tiene el token continuara
+
+		// si tiene el token continuara
 		if (Authorization.isAuthorized(token)) {
 			Session sesion = null;
-			
+
 			try {
-				//creo la transac
+				// creo la transac
 				Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 				sesion.beginTransaction();
 
-				//recibo el usuario, le creo una fecha para la BD,
-				//le encripto la pass y le seteo un rol por defecto
+				// recibo el usuario, le creo una fecha para la BD,
+				// le encripto la pass y le seteo un rol por defecto
 				Usuario c1 = gson.fromJson(json, Usuario.class);
 				c1.setRegisterDate(new Date());
 				String pass = encryptarSHA256(c1.getPassword());
@@ -203,7 +420,7 @@ public class UsuarioRest {
 				sesion.getTransaction().commit();
 				sesion.close();
 
-				//le devuelvo el json con el usuario ya creado
+				// le devuelvo el json con el usuario ya creado
 				json = gson.toJson(c1);
 				return Response.status(201).entity(json).build();
 
@@ -230,7 +447,7 @@ public class UsuarioRest {
 
 		Session sesion = null;
 		try {
-			//creo la transa
+			// creo la transa
 			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
 			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 			sesion.beginTransaction();
@@ -305,14 +522,14 @@ public class UsuarioRest {
 	public Response eliminarFactura(@PathParam("id") String id, @HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
 
 		Session sesion = null;
-		//pido el token
+		// pido el token
 		if (Authorization.isAuthorized(token)) {
 			try {
-				//empieza la transa
+				// empieza la transa
 				sesion = HibernateUtil.getSessionFactory().getCurrentSession();
 				sesion.beginTransaction();
 
-				//updateo el usuario para eliminarlo creadnole una fecha -> removeDate
+				// updateo el usuario para eliminarlo creadnole una fecha -> removeDate
 				int numFilasActualizadas = sesion
 						.createQuery(
 								"UPDATE Usuario AS user SET user.removeDate = :removeDate WHERE user.idUser = :idUser")
@@ -320,11 +537,11 @@ public class UsuarioRest {
 						.executeUpdate();
 				System.out.println(numFilasActualizadas);
 
-				//si lo updatea devuelvo un 200
+				// si lo updatea devuelvo un 200
 				sesion.getTransaction().commit();
 				sesion.close();
 				return Response.status(200).build();
-				
+
 			} catch (NoSuchFieldError e) {
 				sesion.close();
 				System.out.println(e.getMessage());
