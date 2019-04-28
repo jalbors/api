@@ -226,7 +226,7 @@ public class UsuarioRest {
 	@Path("/ordenarPorDinero")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCositas() {
+	public Response getOrdenarPorDinero() {
 		Session sesion = null;
 		try {
 			// creo y empiezo la transac
@@ -269,7 +269,7 @@ public class UsuarioRest {
 	@Path("/ordenarPorFecha")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCositasVarias() {
+	public Response getOrdenarFecha() {
 		Session sesion = null;
 		try {
 			// creo y empiezo la transac
