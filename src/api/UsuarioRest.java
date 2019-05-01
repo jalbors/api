@@ -21,6 +21,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -114,6 +115,8 @@ public class UsuarioRest {
 
 			// muestro que haya devuelto lo correcto
 			System.out.println(usuario.toString());
+			//System.out.println(ToStringBuilder.reflectionToString(usuario));
+			
 			sesion.getTransaction().commit();
 			sesion.close();
 
@@ -153,7 +156,7 @@ public class UsuarioRest {
 
 			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
-
+			System.out.println(ToStringBuilder.reflectionToString(usuariosTotales));
 			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
@@ -198,6 +201,7 @@ public class UsuarioRest {
 			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
+			System.out.println(ToStringBuilder.reflectionToString(usuariosTotales));
 			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
@@ -241,6 +245,7 @@ public class UsuarioRest {
 			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
+			System.out.println(ToStringBuilder.reflectionToString(usuariosTotales));
 			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
@@ -284,6 +289,7 @@ public class UsuarioRest {
 			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
+			System.out.println(ToStringBuilder.reflectionToString(usuariosTotales));
 			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
@@ -327,6 +333,7 @@ public class UsuarioRest {
 			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
+			System.out.println(ToStringBuilder.reflectionToString(usuariosTotales));
 			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
@@ -369,6 +376,7 @@ public class UsuarioRest {
 			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
+			System.out.println(ToStringBuilder.reflectionToString(usuariosTotales));
 			System.out.println(usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
@@ -482,6 +490,9 @@ public class UsuarioRest {
 				sesion.close();
 
 				String json_dev = gson.toJson(u1);
+				
+				//ALOEMJOR PETA
+				System.out.println(ToStringBuilder.reflectionToString(numFilasAc));
 				System.out.println(numFilasAc);
 				return Response.status(201).entity(json_dev).build();
 			}
@@ -535,6 +546,9 @@ public class UsuarioRest {
 								"UPDATE Usuario AS user SET user.removeDate = :removeDate WHERE user.idUser = :idUser")
 						.setParameter("removeDate", new Date()).setParameter("idUser", Integer.parseInt(id))
 						.executeUpdate();
+				
+				//peta
+				System.out.println(ToStringBuilder.reflectionToString(numFilasActualizadas));
 				System.out.println(numFilasActualizadas);
 
 				// si lo updatea devuelvo un 200
