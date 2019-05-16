@@ -57,22 +57,27 @@ public class UsuarioRest {
 			// recivo el usuario
 			UsuarioLogin userLogin = gson.fromJson(json, UsuarioLogin.class);
 
+			System.out.println(userLogin.getPassword().trim());
+
 			// le encripto las pass para que sea igual que en la BD
 			String pass_encrip = encryptarSHA256(userLogin.getPassword()).trim();
 
+			System.out.println(pass_encrip.trim());
+
 			// creo una consulta pasandole el email y la pass encriptada
 			Query<UsuarioLogin> consultaUserLogin = sesion.createQuery(
-					"select new domain.UsuarioLogin(u.email, u.password) FROM Usuario as u WHERE u.email = :email AND u.password = :password",
+					"select new domain.UsuarioLogin(u.email, u.password, u.rol) FROM Usuario as u WHERE u.email = :email AND u.password = :password",
 					domain.UsuarioLogin.class);
 
 			consultaUserLogin.setParameter("email", userLogin.getEmail());
-			consultaUserLogin.setParameter("password", pass_encrip);
+			consultaUserLogin.setParameter("password", userLogin.getPassword().trim());
 
 			// me devuelve el usuario si todo ha ido bien
 			userLogin = (UsuarioLogin) consultaUserLogin.getSingleResult();
 
 			// genera el token y setea la pass en blanco
 			String tokenADevolver = generateToken(userLogin.getIdUser());
+
 			userLogin.setToken(tokenADevolver);
 			userLogin.setPassword("");
 
@@ -115,8 +120,8 @@ public class UsuarioRest {
 
 			// muestro que haya devuelto lo correcto
 			System.out.println(usuario.toString());
-			//System.out.println(ToStringBuilder.reflectionToString(usuario));
-			
+			// System.out.println(ToStringBuilder.reflectionToString(usuario));
+
 			sesion.getTransaction().commit();
 			sesion.close();
 
@@ -225,7 +230,7 @@ public class UsuarioRest {
 		}
 
 	}
-	
+
 	@GET
 	@Path("/ordenarPorDinero")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -269,7 +274,7 @@ public class UsuarioRest {
 		}
 
 	}
-	
+
 	@GET
 	@Path("/ordenarPorFecha")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -313,7 +318,7 @@ public class UsuarioRest {
 		}
 
 	}
-	
+
 	@GET
 	@Path("/ordenarPorNombre")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -396,6 +401,68 @@ public class UsuarioRest {
 		} catch (Exception e) {
 			sesion.close();
 			e.printStackTrace();
+			return Response.status(500).build();
+		}
+
+	}
+
+	@POST
+	@Path("/{id}/anydir")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response postInsertarDatosUsuario(@PathParam("id") String id, String json,
+			@HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
+
+		Session sesion = null;
+		try {
+			// creo la transa
+			Gson gson = new GsonBuilder().registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY).create();
+			sesion = HibernateUtil.getSessionFactory().getCurrentSession();
+			sesion.beginTransaction();
+
+			// usuario que le envia el usuario
+			Usuario u1 = gson.fromJson(json, Usuario.class);
+
+			System.out.println("aqui llega?");
+
+			int numFilasAc = sesion.createQuery(
+					"UPDATE domain.Usuario AS u SET u.adress = :adress, u.phone = :phone, u.yearsWork = :yearsWork, u.description = :description WHERE u.idUser = :idUser")
+					.setParameter("adress", u1.getAdress()).setParameter("phone", u1.getPhone())
+					.setParameter("yearsWork", u1.getYearsWork()).setParameter("description", u1.getDescription())
+					.setParameter("idUser", id).executeUpdate();
+
+			sesion.getTransaction().commit();
+			sesion.close();
+
+			String json_dev = gson.toJson(u1);
+
+			System.out.println(ToStringBuilder.reflectionToString(numFilasAc));
+			System.out.println(numFilasAc);
+			return Response.status(201).entity(json_dev).build();
+
+		} catch (JsonSyntaxException e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
+
+			return Response.status(400).build();
+
+		} catch (NoResultException e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
+			return Response.status(404).build();
+
+		} catch (HibernateException e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
+			return Response.status(500).build();
+
+		} catch (Exception e) {
+
+			sesion.close();
+			System.out.println(e.getMessage());
 			return Response.status(500).build();
 		}
 
@@ -490,8 +557,8 @@ public class UsuarioRest {
 				sesion.close();
 
 				String json_dev = gson.toJson(u1);
-				
-				//ALOEMJOR PETA
+
+				// ALOEMJOR PETA
 				System.out.println(ToStringBuilder.reflectionToString(numFilasAc));
 				System.out.println(numFilasAc);
 				return Response.status(201).entity(json_dev).build();
@@ -546,8 +613,8 @@ public class UsuarioRest {
 								"UPDATE Usuario AS user SET user.removeDate = :removeDate WHERE user.idUser = :idUser")
 						.setParameter("removeDate", new Date()).setParameter("idUser", Integer.parseInt(id))
 						.executeUpdate();
-				
-				//peta
+
+				// peta
 				System.out.println(ToStringBuilder.reflectionToString(numFilasActualizadas));
 				System.out.println(numFilasActualizadas);
 

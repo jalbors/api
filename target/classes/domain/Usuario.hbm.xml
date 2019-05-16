@@ -30,6 +30,18 @@
         <property generated="never" lazy="false" name="rol" optimistic-lock="true" type="string" unique="false">
             <column length="45" name="rol" not-null="true"/>
         </property>
+        <property generated="never" lazy="false" name="adress" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="adress"/>
+        </property>
+        <property generated="never" lazy="false" name="phone" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="phone"/>
+        </property>
+        <property generated="never" lazy="false" name="yearsWork" optimistic-lock="true" type="string" unique="false">
+            <column length="45" name="yearsWork"/>
+        </property>
+        <property generated="never" lazy="false" name="description" optimistic-lock="true" type="string" unique="false">
+            <column length="245" name="description"/>
+        </property>
         
     </class>
 </hibernate-mapping>

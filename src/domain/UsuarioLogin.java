@@ -7,6 +7,11 @@ public class UsuarioLogin {
 	private String password;
 	private String token;
 	private String idUser;
+	private String rol;
+
+	public UsuarioLogin() {
+		super();
+	}
 
 	public UsuarioLogin(String email, String password) {
 		super();
@@ -14,11 +19,27 @@ public class UsuarioLogin {
 		this.password = password;
 	}
 
-	public UsuarioLogin(String email, String password, String token) {
+	public UsuarioLogin(String email, String password, String rol) {
+		super();
+		this.email = email;
+		this.password = password;
+		this.rol = rol;
+	}
+
+	public UsuarioLogin(String email, String password, String token, String rol) {
 		super();
 		this.email = email;
 		this.password = password;
 		this.token = token;
+		this.rol = rol;
+	}
+
+	public String getRol() {
+		return rol;
+	}
+
+	public void setRol(String rol) {
+		this.rol = rol;
 	}
 
 	public String getIdUser() {
