@@ -288,14 +288,14 @@ public class UsuarioRest {
 
 			// creo la consulta
 			Query<Usuario> consultaUsers = sesion.createQuery(
-					"select new domain.Usuario(u.idUser,u.name, u.surname, u.email, u.money, u.registerDate, u.rol)FROM Usuario as u WHERE u.removeDate is NULL order by u.registerDate asc",
+					"select new domain.Usuario(u.idUser,u.name,u.adress, u.phone, u.yearsWork, u.description)FROM Usuario as u WHERE u.removeDate is NULL",
 					domain.Usuario.class);
 
 			// hago una lista de todos los usuarios devueltos
 			List<Usuario> usuariosTotales = consultaUsers.setMaxResults(999999999).getResultList();
 
-			System.out.println(ToStringBuilder.reflectionToString(usuariosTotales));
-			System.out.println(usuariosTotales.toString());
+			System.out.println("lista isiarps mdasda   " + ToStringBuilder.reflectionToString(usuariosTotales));
+			System.out.println("lista isiarps mdasda   " + usuariosTotales.toString());
 			sesion.getTransaction().commit();
 			sesion.close();
 
@@ -407,12 +407,12 @@ public class UsuarioRest {
 	}
 
 	@POST
-	@Path("/{id}/anydir")
+	@Path("/{id}/anyadir")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response postInsertarDatosUsuario(@PathParam("id") String id, String json,
 			@HeaderParam(HttpHeaders.AUTHORIZATION) String token) {
-
+		System.out.println("aqui llega?");
 		Session sesion = null;
 		try {
 			// creo la transa
@@ -429,14 +429,15 @@ public class UsuarioRest {
 					"UPDATE domain.Usuario AS u SET u.adress = :adress, u.phone = :phone, u.yearsWork = :yearsWork, u.description = :description WHERE u.idUser = :idUser")
 					.setParameter("adress", u1.getAdress()).setParameter("phone", u1.getPhone())
 					.setParameter("yearsWork", u1.getYearsWork()).setParameter("description", u1.getDescription())
-					.setParameter("idUser", id).executeUpdate();
+					.setParameter("idUser", Integer.parseInt(id)).executeUpdate();
 
 			sesion.getTransaction().commit();
 			sesion.close();
 
 			String json_dev = gson.toJson(u1);
 
-			System.out.println(ToStringBuilder.reflectionToString(numFilasAc));
+			// System.out.println("el
+			// jincho"+ToStringBuilder.reflectionToString(numFilasAc));
 			System.out.println(numFilasAc);
 			return Response.status(201).entity(json_dev).build();
 
@@ -487,8 +488,6 @@ public class UsuarioRest {
 				// le encripto la pass y le seteo un rol por defecto
 				Usuario c1 = gson.fromJson(json, Usuario.class);
 				c1.setRegisterDate(new Date());
-				String pass = encryptarSHA256(c1.getPassword());
-				c1.setPassword(pass);
 				c1.setRol("USER");
 
 				sesion.save(c1);
@@ -538,17 +537,14 @@ public class UsuarioRest {
 			// usuario ya creado en la BD
 			Usuario usuario_comp = consulta.getSingleResult();
 
-			// la pass del user la encripto porque en la BD esta encriptada
-			String passUsuarioEnviada = encryptarSHA256(u1.getPassword());
-
-			if (!passUsuarioEnviada.equalsIgnoreCase(usuario_comp.getPassword())
+			if (!u1.getPassword().equalsIgnoreCase(usuario_comp.getPassword())
 					&& !u1.getName().equalsIgnoreCase(usuario_comp.getName())
 					&& !u1.getSurname().equalsIgnoreCase(usuario_comp.getSurname())
 					&& !u1.getEmail().equalsIgnoreCase(usuario_comp.getEmail())
 					&& u1.getMoney() != usuario_comp.getMoney()) {
 				int numFilasAc = sesion.createQuery(
 						"UPDATE domain.Usuario AS u SET u.password = :password, u.name = :name, u.surname = :surname, u.email = :email, u.money = :money WHERE u.idUser = :idUser")
-						.setParameter("password", passUsuarioEnviada).setParameter("name", u1.getName())
+						.setParameter("password", u1.getPassword()).setParameter("name", u1.getName())
 						.setParameter("surname", u1.getSurname()).setParameter("email", u1.getEmail())
 						.setParameter("money", u1.getMoney()).setParameter("idUser", Integer.parseInt(id))
 						.executeUpdate();

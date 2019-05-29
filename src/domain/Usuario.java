@@ -22,6 +22,16 @@ public class Usuario implements java.io.Serializable {
 	private String rol;
 	private String adress, phone, yearsWork, description;
 
+	public Usuario(Integer idUser, String name, String adress, String phone, String yearsWork, String description) {
+		super();
+		this.idUser = idUser;
+		this.name = name;
+		this.adress = adress;
+		this.phone = phone;
+		this.yearsWork = yearsWork;
+		this.description = description;
+	}
+
 	public Usuario(Integer idUser, String adress, String phone, String yearsWork, String description) {
 		super();
 		this.idUser = idUser;
